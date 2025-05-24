@@ -2,14 +2,14 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db import crud, models
 from app.db.db import get_db
-from app.schemas.submission import SubmissionCreate, SubmissionOut, SubmissionApproval
+from app.schemas.submission import SubmissionCreate, SubmissionOut, SubmissionApproval, PauseTask, TasksList
 
 router = APIRouter()
 
 @router.post("/submit-task", response_model=SubmissionOut)
 def submit_task(data: SubmissionCreate, db: Session = Depends(get_db)):
     # 1. Validate mentee
-    mentee = crud.get_user_by_email(db, data.mentee_email)
+    mentee = crud.get_user_by_email(db, email=data.mentee_email)
     if not mentee or mentee.role != "mentee":
         raise HTTPException(status_code=403, detail="Invalid or missing mentee")
 
@@ -49,3 +49,29 @@ def approve_task(data: SubmissionApproval, db: Session = Depends(get_db)):
         status=data.status
     )
     return updated
+
+@router.post("/pause-task", response_model=PauseTask)
+def pause_task(data: PauseTask, db: Session = Depends(get_db)):
+    mentor = crud.get_user_by_email(db, data.mentor_email)
+    mentee = crud.get_user_by_email(db, email=data.mentee_email)
+    if not crud.is_mentor_of(db, mentor.id, mentee.id):
+        raise HTTPException(status_code=403, detail="Mentor not authorized for this mentee")
+    task = crud.get_task(db, task_id=data.task_id)
+    mentee_task_submission = db.query(models.Submission).filter_by(mentee_id=mentee, task=task).first()
+    if mentee_task_submission.pause_start():
+        return HTTPException(status_code=400, detail="This task is already paused")
+    paused = crud.pause_task(mentee_task_submission.id)
+    return paused
+
+@router.post("/pause-end", response_model=PauseTask)
+def end_pause(data: PauseTask, db: Session = Depends(get_db)):
+    mentor = crud.get_user_by_email()
+    mentee = crud.get_user_by_email()
+    if not crud.is_mentor_of(db, mentor.id, mentee.id):
+        return HTTPException(status_code=403, detail="Mentor not authorized for this mentee")
+    task = crud.get_task(db, task_id=data.task_id)
+    mentee_task_submission = db.query(models.Submission).filter_by(mentee_id=mentee, task=task).first()
+    if mentee_task_submission.pause_start():
+        return HTTPException(status_code=400, detail="This task is already paused")
+    paused = crud.end_pause(mentee_task_submission.id)
+    return paused

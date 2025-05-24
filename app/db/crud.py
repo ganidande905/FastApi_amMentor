@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.db import models
-from datetime import datetime
+from datetime import datetime, date
 
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
@@ -33,7 +33,7 @@ def approve_submission(db: Session, submission_id: int, mentor_feedback: str, st
     sub.status = status
     sub.mentor_feedback = mentor_feedback
     if status == "approved":
-        sub.approved_at = datetime.utcnow()
+        sub.approved_at = datetime.now()
 
     db.commit()
     db.refresh(sub)
@@ -58,3 +58,17 @@ def get_leaderboard_data(db: Session, track_id: int):
         .order_by(func.sum(models.Task.points).desc())
         .all()
     )
+
+def pause_task(db: Session, submission: int):
+    pause_row=db.query(models.Submission).filter_by(id=submission).first()
+    pause_row.pause=datetime.now()
+    db.commit()
+    db.refresh()
+    return pause_row
+
+def end_pause(db: Session, submission: int):
+    pause_row=db.query(models.Submission).filter_by(id=submission).first()
+    pause_row.total_paused_time+= datetime.combine(date.today(), datetime.now()) - datetime.combine(date.today(), pause_row.pause_start)
+    db.commit()
+    db.refresh()
+    return pause_row

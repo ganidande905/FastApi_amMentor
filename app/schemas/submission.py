@@ -11,7 +11,7 @@ class SubmissionCreate(SubmissionBase):
     mentee_email: str
 
 class SubmissionOut(BaseModel):
-    id: int
+    id: int # name check please
     mentee_id: int
     task_id: int
     reference_link: str
@@ -28,3 +28,14 @@ class SubmissionApproval(BaseModel):
     mentor_email: str
     status: str  # approved, paused, rejected
     mentor_feedback: Optional[str] = None
+
+class PauseTask(BaseModel):
+    submission_id: int # is that the right name ?
+    pause_start: datetime
+    task_id: int
+    mentee_email: str
+    mentor_email: str
+
+class TasksList(BaseModel):
+    track_id: int
+    mentee_id: str

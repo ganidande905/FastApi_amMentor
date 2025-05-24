@@ -39,9 +39,11 @@ class Submission(Base):
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
     reference_link = Column(Text, nullable=False)
     status = Column(String, default="submitted")  # submitted / approved / paused / rejected
-    submitted_at = Column(DateTime, default=datetime.utcnow)
+    submitted_at = Column(DateTime, nullable=True)
     approved_at = Column(DateTime, nullable=True)
     mentor_feedback = Column(Text, nullable=True)
+    pause_start = Column(DateTime, nullable=True)
+    total_paused_time = Column(Integer, nullable=False, default=0)
 
     mentee = relationship("User")
     task = relationship("Task")
