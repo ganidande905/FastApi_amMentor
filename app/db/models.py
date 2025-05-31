@@ -1,6 +1,5 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
-from datetime import datetime
 from app.db.db import Base
 
 class User(Base):
@@ -38,10 +37,14 @@ class Submission(Base):
     mentee_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     task_id = Column(Integer, ForeignKey("tasks.id"), nullable=False)
     reference_link = Column(Text, nullable=False)
-    status = Column(String, default="submitted")  # submitted / approved / paused / rejected
-    submitted_at = Column(DateTime, default=datetime.utcnow)
+    status = Column(String, default="ongoing")  # submitted / approved / paused  / ongoing
+    start_date = Column(String, nullable=False)
+    submitted_at = Column(DateTime, nullable=True)
     approved_at = Column(DateTime, nullable=True)
     mentor_feedback = Column(Text, nullable=True)
+    pause_start = Column(DateTime, nullable=True)
+    total_paused_time = Column(Integer, nullable=False, default=0)
+
     mentee = relationship("User")
     task = relationship("Task")
 
@@ -62,7 +65,7 @@ class LeaderboardEntry(Base):
     tasks_completed = Column(Integer, default=0)
 class OTP(Base):
     __tablename__ = "otp"
-
+    
     email = Column(String, primary_key=True, index=True)
     otp = Column(String, nullable=False)
     expires_at = Column(DateTime, nullable=False)
