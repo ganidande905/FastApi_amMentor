@@ -8,13 +8,14 @@ class TaskBase(BaseModel):
     title: str
     description: Optional[str] = None
     points: int = 10
-    deadline: Optional[datetime] = None 
+    deadline: Optional[int] = None 
 
 class TaskCreate(TaskBase):
     pass
 
 class TaskOut(TaskBase):
-    id: int
+    progress_bar: int
+    status: str
 
     class Config:
         orm_mode = True
