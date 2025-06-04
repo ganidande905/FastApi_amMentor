@@ -19,7 +19,7 @@ def submit_task(db: Session, mentee_id: int, task_id: int, reference_link: str,s
         mentee_id=mentee_id,
         task_id=task_id,
         reference_link=reference_link,
-        submitted_at=date,
+        submitted_at=date.today(),
         status="submitted",
         start_date=start_date,
         

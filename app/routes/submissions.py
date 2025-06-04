@@ -13,7 +13,7 @@ def get_submissions(
     track_id: Optional[int] = Query(None), 
     db: Session = Depends(get_db)
 ):
-    submissions = crud.get_submissions(db, email, track_id)
+    submissions = crud.get_submissions(db, email, track_id,)
     if not submissions:
         raise HTTPException(status_code=404, detail="No submissions found")
     return submissions
