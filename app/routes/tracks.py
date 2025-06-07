@@ -17,4 +17,5 @@ def list_tasks_for_track(track_id: int, db: Session = Depends(get_db)):
     if not track:
         raise HTTPException(status_code=404, detail="Track not found")
 
-    return db.query(models.Task).filter_by(track_id=track_id).order_by(models.Task.task_no).all()
+    tasks = db.query(models.Task).filter_by(track_id=track_id).order_by(models.Task.task_no).all()
+    return [TaskOut.from_orm(task) for task in tasks]
