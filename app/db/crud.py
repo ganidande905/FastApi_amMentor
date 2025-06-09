@@ -38,7 +38,7 @@ def approve_submission(db: Session, submission_id: int, mentor_feedback: str, st
     sub.status = status
     sub.mentor_feedback = mentor_feedback
     if status == "approved":
-        sub.approved_at = datetime.utcnow()
+        sub.approved_at = date.today()
 
     db.commit()
     db.refresh(sub)
