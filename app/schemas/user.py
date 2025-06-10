@@ -10,6 +10,10 @@ class UserCreate(UserBase):
 class UserOut(UserBase):
     id: int
     role: str
+    name: str
+    email: str
 
     class Config:
         orm_mode = True
+class UserOutWithPoints(UserOut):
+    total_points: int
