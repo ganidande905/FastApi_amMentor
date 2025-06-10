@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db.db import Base, engine
-from app.routes import auth, progress, tracks, leaderboard, mentors , submissions
+from app.routes import auth, progress, tracks, leaderboard, mentors , submissions 
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="amMentor API")
