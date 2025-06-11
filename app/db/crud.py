@@ -11,21 +11,26 @@ def get_user_by_email(db: Session, email: str):
 def get_task(db: Session, track_id: int, task_no: int):
     return db.query(models.Task).filter_by(track_id=track_id, task_no=task_no).first()
 
-def submit_task(db: Session, mentee_id: int, task_id: int, reference_link: str,start_date: date):
+def submit_task(db: Session, mentee_id: int, task_id: int, reference_link: str, start_date: date):
     existing = db.query(models.Submission).filter_by(mentee_id=mentee_id, task_id=task_id).first()
     if existing:
         return None  # Already submitted
 
+    task = db.query(models.Task).filter(models.Task.id == task_id).first()
+    if not task:
+        raise Exception("Task not found")
+
     submission = models.Submission(
         mentee_id=mentee_id,
-        task_id=task_id,
+        task_id=task.id,
+        task_name=task.title,     
+        task_no=task.task_no,    
         reference_link=reference_link,
         submitted_at=date.today(),
         status="submitted",
         start_date=start_date,
-        
-
     )
+
     db.add(submission)
     db.commit()
     db.refresh(submission)
@@ -77,12 +82,13 @@ def create_or_update_otp(db, email, otp, expires_at):
         db.add(entry)
     db.commit()
 
-def get_submissions(db: Session, email: str, track_id: Optional[int] = None) -> list[SubmissionOut]:
+
+def get_submissions_for_user(db: Session, email: str, track_id: Optional[int] = None) -> list[SubmissionOut]:
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user:
         return []
 
-    query = db.query(models.Submission).options(joinedload(models.Submission.task)).filter(
+    query = db.query(models.Submission).filter(
         models.Submission.mentee_id == user.id
     )
 
@@ -96,8 +102,8 @@ def get_submissions(db: Session, email: str, track_id: Optional[int] = None) -> 
             id=sub.id,
             mentee_id=sub.mentee_id,
             task_id=sub.task_id,
-            task_no = sub.task.task_no,
-            task_name=sub.task.title, 
+            task_name=sub.task_name,   
+            task_no=sub.task_no,       
             reference_link=sub.reference_link,
             status=sub.status,
             submitted_at=sub.submitted_at.date(),
