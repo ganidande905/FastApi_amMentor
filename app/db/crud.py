@@ -1,5 +1,6 @@
 from typing import Optional
-from sqlalchemy.orm import Session
+from app.schemas.submission import SubmissionOut
+from sqlalchemy.orm import Session,joinedload
 from app.db import models
 from datetime import datetime, date
 from sqlalchemy import func
@@ -76,13 +77,32 @@ def create_or_update_otp(db, email, otp, expires_at):
         db.add(entry)
     db.commit()
 
-
-def get_submissions(db: Session, email: str, track_id: Optional[int] = None):
+def get_submissions(db: Session, email: str, track_id: Optional[int] = None) -> list[SubmissionOut]:
     user = db.query(models.User).filter(models.User.email == email).first()
     if not user:
         return []
-    query = db.query(models.Submission).filter(models.Submission.mentee_id == user.id)
+
+    query = db.query(models.Submission).options(joinedload(models.Submission.task)).filter(
+        models.Submission.mentee_id == user.id
+    )
+
     if track_id is not None:
-        query = query.join(models.Task, models.Submission.task_id == models.Task.id)
-        query = query.filter(models.Task.track_id == track_id)
-    return query.all()
+        query = query.join(models.Task).filter(models.Task.track_id == track_id)
+
+    submissions = query.all()
+
+    return [
+        SubmissionOut(
+            id=sub.id,
+            mentee_id=sub.mentee_id,
+            task_id=sub.task_id,
+            task_name=sub.task.title, 
+            reference_link=sub.reference_link,
+            status=sub.status,
+            submitted_at=sub.submitted_at.date(),
+            approved_at=sub.approved_at.date() if sub.approved_at else None,
+            mentor_feedback=sub.mentor_feedback,
+            start_date=sub.start_date
+        )
+        for sub in submissions
+    ]

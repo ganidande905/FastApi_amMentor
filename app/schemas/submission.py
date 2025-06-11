@@ -15,6 +15,7 @@ class SubmissionOut(BaseModel):
     id: int
     mentee_id: int
     task_id: int
+    task_name: str 
     reference_link: str
     status: str
     submitted_at: date
