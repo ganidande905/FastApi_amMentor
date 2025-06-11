@@ -96,6 +96,7 @@ def get_submissions(db: Session, email: str, track_id: Optional[int] = None) -> 
             id=sub.id,
             mentee_id=sub.mentee_id,
             task_id=sub.task_id,
+            task_no = sub.task_no,
             task_name=sub.task.title, 
             reference_link=sub.reference_link,
             status=sub.status,
