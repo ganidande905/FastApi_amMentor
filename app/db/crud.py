@@ -102,14 +102,14 @@ def get_submissions_for_user(db: Session, email: str, track_id: Optional[int] = 
             id=sub.id,
             mentee_id=sub.mentee_id,
             task_id=sub.task_id,
-            task_name=sub.task_name,   
-            task_no=sub.task_no,       
+            task_name=sub.task_name,
+            task_no=sub.task_no,
             reference_link=sub.reference_link,
             status=sub.status,
-            submitted_at=sub.submitted_at.date(),
+            submitted_at=sub.submitted_at.date() if sub.submitted_at else None,
             approved_at=sub.approved_at.date() if sub.approved_at else None,
             mentor_feedback=sub.mentor_feedback,
-            start_date=sub.start_date
+            start_date=sub.start_date.date() if sub.start_date else None
         )
         for sub in submissions
     ]
